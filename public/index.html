@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Face Recognition</title>
+  <link rel="stylesheet" href="../node_modules/bulma/css/bulma.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
+    integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.7.1/css/fontawesome.min.css" integrity="sha512-aP4LyQwPu7DAUAgYHVE2zZ0ZG02lDMcWtIsMG1H6VhvPICHEgy2RqF0igO8kCz+EuHmoxLekNvddm3g5VuPNfQ==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
+  <style>
+    ul li {
+      display: inline-block;
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+
+    .list {
+      line-height: 38px;
+      font-weight: 600;
+      text-transform: lowercase;
+      letter-spacing: 1px;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar is-fixed-top has-background-link-light has-shadow has-text-weight-semibold" role="navigation">
+    <!-- <div class="navbar-brand">[***]</div> -->
+    <div class="navbar-menu">
+      <div class="navbar-start">
+        <a class="navbar-item is-tab is-active">主页</a>
+        <div class="navbar-item has-dropdown is-boxed is-hoverable">
+          <a class="navbar-link">
+            其它
+          </a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item">
+              Overview
+            </a>
+            <a class="navbar-item">
+              Elements
+            </a>
+            <a class="navbar-item">
+              Components
+            </a>
+            <hr class="navbar-divider">
+            <div class="navbar-item">
+              Version 1.0.4
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- narbar-end -->
+      <div class="navbar-end">
+        <div class="navbar-item">
+          <div class="buttons">
+            <a class="button is-light js-modal-trigger" data-target="login-modal">
+              登录
+            </a>
+            <a class="button is-light js-modal-trigger" data-target="register-modal">
+              注册
+            </a>
+          </div>
+        </div>
+      </div>
+      <!-- narbar-end -->
+
+    </div>
+  </nav>
+
+  <div class="modal" id="login-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">填写登录信息: </p>
+        <button class="delete" aria-label="close"></button>
+      </header>
+      <section class="modal-card-body">
+        <!-- Content ... -->
+        <div class="field">
+          <label class="label" for="">邮箱: </label>
+          <div class="control has-icons-left has-icons-right">
+            <input class="input is-info" type="email" placeholder="Email" />
+            <span class="icon is-small is-left">
+              <i class="fa fa-envelope"></i>
+            </span>
+            <span class="icon is-small is-right">
+              <i class="fa fa-check"></i>
+            </span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label" for="">密码: </label>
+          <div class="control has-icons-left has-icons-right">
+            <input class="input is-info" type="password" placeholder="Password" />
+            <span class="icon is-small is-left">
+              <i class="fa fa-key"></i>
+            </span>
+            <span class="icon is-small is-right">
+              <i class="fa fa-check"></i>
+            </span>
+          </div>
+        </div>
+      </section>
+      <footer class="modal-card-foot">
+        <div class="buttons">
+          <button class="button is-success">确定</button>
+          <button class="button">取消</button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <div class="modal" id="register-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">填写登录信息: </p>
+        <button class="delete" aria-label="close"></button>
+      </header>
+      <section class="modal-card-body">
+        <!-- Content ... -->
+        <div class="field">
+          <label class="label" for="">邮箱: </label>
+          <div class="control has-icons-left has-icons-right">
+            <input class="input is-info" type="email" placeholder="Email" />
+            <span class="icon is-small is-left">
+              <i class="fa fa-envelope"></i>
+            </span>
+            <span class="icon is-small is-right">
+              <i class="fa fa-check"></i>
+            </span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label" for="">密码: </label>
+          <div class="control has-icons-left has-icons-right">
+            <input class="input is-info" type="password" placeholder="Password" />
+            <span class="icon is-small is-left">
+              <i class="fa fa-key"></i>
+            </span>
+            <span class="icon is-small is-right">
+              <i class="fa fa-check"></i>
+            </span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label" for="">再次确认: </label>
+          <div class="control has-icons-left has-icons-right">
+            <input class="input is-info" type="password" placeholder="Password" />
+            <span class="icon is-small is-left">
+              <i class="fa fa-key"></i>
+            </span>
+            <span class="icon is-small is-right">
+              <i class="fa fa-check"></i>
+            </span>
+          </div>
+        </div>
+      </section>
+      <footer class="modal-card-foot">
+        <div class="buttons">
+          <button class="button is-success">确定</button>
+          <button class="button">取消</button>
+        </div>
+      </footer>
+    </div>
+  </div>
+</body>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Functions to open and close a modal
+    function openModal($el) {
+      $el.classList.add('is-active');
+    }
+
+    function closeModal($el) {
+      $el.classList.remove('is-active');
+    }
+
+    function closeAllModals() {
+      (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+        closeModal($modal);
+      });
+    }
+
+    // Add a click event on buttons to open a specific modal
+    (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+      const modal = $trigger.dataset.target;
+      const $target = document.getElementById(modal);
+
+      $trigger.addEventListener('click', () => {
+        openModal($target);
+      });
+    });
+
+    // Add a click event on various child elements to close the parent modal
+    (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button') || []).forEach(($close) => {
+      const $target = $close.closest('.modal');
+
+      $close.addEventListener('click', () => {
+        closeModal($target);
+      });
+    });
+
+    // Add a keyboard event to close all modals
+    document.addEventListener('keydown', (event) => {
+      if (event.key === "Escape") {
+        closeAllModals();
+      }
+    });
+  });
+</script>
+
+</html>
