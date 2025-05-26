@@ -1,13 +1,13 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum
+from sqlalchemy import Column, Integer, DateTime, ForeignKey, String, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
 from ..base import Base
 
-class AbsenceType(str, enum.Enum):
-    SICK = "sick"        # 病假
-    PERSONAL = "personal"  # 事假
-    UNKNOWN = "unknown"    # 未知原因
+class AbsenceStatus(str, enum.Enum):
+    PENDING = "pending"    # 待审批
+    APPROVED = "approved"  # 已批准
+    REJECTED = "rejected"  # 已拒绝
 
 class Absence(Base):
     __tablename__ = "absences"
@@ -15,12 +15,11 @@ class Absence(Base):
     id = Column(Integer, primary_key=True, index=True)
     student_id = Column(Integer, ForeignKey("students.id"))
     task_id = Column(Integer, ForeignKey("attendance_tasks.id"))
-    type = Column(Enum(AbsenceType), default=AbsenceType.UNKNOWN)
-    reason = Column(String, nullable=True)
-    proof_document = Column(String, nullable=True)  # 证明文件路径
+    reason = Column(String, nullable=False)  # 请假原因
+    status = Column(Enum(AbsenceStatus), default=AbsenceStatus.PENDING)
+    approved_by = Column(Integer, ForeignKey("teachers.id"), nullable=True)
+    approved_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    approved_at = Column(DateTime(timezone=True), nullable=True)  # 审批时间
-    approved_by = Column(Integer, ForeignKey("teachers.id"), nullable=True)  # 审批教师
 
     # 关系
     student = relationship("Student", back_populates="absences")

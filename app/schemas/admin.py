@@ -2,28 +2,26 @@ from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional
 
-class TeacherBase(BaseModel):
+class AdminBase(BaseModel):
     username: str
     email: EmailStr
     name: str
-    title: str
-    department: str
+    phone: Optional[str] = None
 
-class TeacherCreate(TeacherBase):
-    initial_password: str
+class AdminCreate(AdminBase):
+    password: str
+    is_super_admin: bool = False
 
-class TeacherUpdate(BaseModel):
+class AdminUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
-    title: Optional[str] = None
-    department: Optional[str] = None
-    is_active: Optional[bool] = None
+    phone: Optional[str] = None
+    password: Optional[str] = None
 
-class Teacher(TeacherBase):
+class Admin(AdminBase):
     id: int
-    is_active: bool
+    is_super_admin: bool
     last_login_at: Optional[datetime] = None
-    created_by: int
     created_at: datetime
     updated_at: Optional[datetime] = None
 
