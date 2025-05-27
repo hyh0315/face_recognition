@@ -29,11 +29,7 @@ def create_initial_admin(db: Session) -> None:
         print("初始管理员账号创建成功")
 
 def create_test_accounts(db: Session) -> None:
-    """创建测试账号"""
-    # 删除已存在的测试账号
-    db.query(Teacher).filter(Teacher.username == "teacher1").delete()
-    db.query(Student).filter(Student.username == "student1").delete()
-    db.commit()
+
 
     # 创建测试教师账号
     teacher = Teacher(

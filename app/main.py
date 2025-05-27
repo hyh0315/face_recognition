@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.endpoints import auth, attendance, statistics
+from app.api.endpoints import auth, attendance, statistics, student, user_management
 from app.core.config import settings
 
 app = FastAPI(
@@ -21,6 +21,8 @@ app.add_middleware(
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["认证"])
 app.include_router(attendance.router, prefix=f"{settings.API_V1_STR}/attendance", tags=["考勤"])
 app.include_router(statistics.router, prefix=f"{settings.API_V1_STR}/statistics", tags=["统计"])
+app.include_router(student.router, prefix=f"{settings.API_V1_STR}/student", tags=["学生"])
+app.include_router(user_management.router, prefix=f"{settings.API_V1_STR}/users", tags=["用户管理"])
 
 @app.get("/")
 async def root():
@@ -28,4 +30,6 @@ async def root():
 
 if __name__=="__main__":
     import uvicorn
-    uvicorn.run(app, host='127.0.0.1', port=8888)
+    uvicorn.run(app, host='192.168.224.98', port=8888)
+    
+#python -m app.main

@@ -3,8 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
 from app.core.security import (
-    verify_password, create_access_token, get_password_hash,
-    verify_password_with_salt
+    verify_password, create_access_token, get_password_hash
 )
 from app.core.config import settings
 from app.db.base import get_db
@@ -65,7 +64,6 @@ async def login(
     # 尝试所有用户类型
     user = None
     user_type = None
-    
     # 检查管理员
     admin = db.query(Admin).filter(Admin.username == form_data.username).first()
     if admin and verify_password(form_data.password, admin.hashed_password):
@@ -74,7 +72,7 @@ async def login(
     
     # 检查教师
     if not user:
-        teacher = db.query(Teacher).filter(Teacher.username == form_data.username).first()
+        teacher = db.query(Teacher).filter(Teacher.teacher_id == form_data.username).first()
         if teacher and verify_password(form_data.password, teacher.hashed_password):
             user = teacher
             user_type = UserType.TEACHER

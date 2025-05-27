@@ -13,7 +13,8 @@ class AttendanceTaskBase(BaseModel):
     is_face_required: bool = True
 
 class AttendanceTaskCreate(AttendanceTaskBase):
-    student_ids: List[int]
+    student_ids: Optional[List[int]] = None  # 可选的学生ID列表
+    class_names: Optional[List[str]] = None  # 可选的班级列表
 
 class AttendanceTaskUpdate(BaseModel):
     title: Optional[str] = None
