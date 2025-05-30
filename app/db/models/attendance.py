@@ -7,6 +7,8 @@ from ..base import Base
 class AttendanceStatus(str, enum.Enum):
     NORMAL = "normal"      # 正常签到
     LATE = "late"         # 迟到
+    LEAVE = "leave"       # 请假
+    ABSENT = "absent"     # 缺勤
 
 class Attendance(Base):
     __tablename__ = "attendance"

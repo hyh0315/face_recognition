@@ -7,7 +7,6 @@ class Student(Base):
     __tablename__ = "students"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     student_id = Column(String, unique=True, index=True)  # 学号
@@ -35,6 +34,5 @@ class Student(Base):
     department = Column(String)  # 院系
     major = Column(String)      # 专业
     grade = Column(String)      # 年级
-    is_graduated = Column(Boolean, default=False)  # 是否已毕业
     last_login_at = Column(DateTime(timezone=True), nullable=True)  # 最后登录时间
     

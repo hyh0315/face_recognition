@@ -33,7 +33,6 @@ def create_test_accounts(db: Session) -> None:
 
     # 创建测试教师账号
     teacher = Teacher(
-        username="teacher1",
         email="teacher1@example.com",
         hashed_password=get_password_hash("teacher123"),
         initial_password=get_password_hash("teacher123"),
@@ -48,7 +47,6 @@ def create_test_accounts(db: Session) -> None:
 
     # 创建测试学生账号
     student = Student(
-        username="student1",
         email="student1@example.com",
         hashed_password=get_password_hash("student123"),
         initial_password=get_password_hash("student123"),

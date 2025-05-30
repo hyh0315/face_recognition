@@ -8,7 +8,6 @@ class Teacher(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     teacher_id = Column(String, unique=True, index=True)  # 教师编号
-    username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     name = Column(String)  # 教师姓名
