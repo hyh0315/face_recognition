@@ -24,4 +24,10 @@ def save_face_encoding(user_id: str, face_encoding: np.ndarray):
     # 确保目录存在
     FACE_ENCODINGS_DIR.mkdir(parents=True, exist_ok=True)
     # 保存特征编码
-    np.save(FACE_ENCODINGS_DIR / f"{user_id}.npy", face_encoding) 
+    np.save(FACE_ENCODINGS_DIR / f"{user_id}.npy", face_encoding)
+
+def delete_face_encoding(user_id: str):
+    """删除人脸特征编码文件"""
+    encoding_file = FACE_ENCODINGS_DIR / f"{user_id}.npy"
+    if encoding_file.exists():
+        encoding_file.unlink() 
