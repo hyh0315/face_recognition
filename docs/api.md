@@ -15,6 +15,7 @@
     "password": "string"   // 密码
   }
   ```
+
 - **响应参数**:
 
   ```json
@@ -27,6 +28,7 @@
     "need_change_password": false  // 是否需要修改密码
   }
   ```
+
 - **响应状态码**:
 
   - 200: 登录成功
@@ -42,6 +44,7 @@
   ```
   Authorization: Bearer <access_token>
   ```
+
 - **请求参数**:
 
   ```json
@@ -50,6 +53,7 @@
     "new_password": "string"   // 新密码
   }
   ```
+
 - **响应参数**:
 
   ```json
@@ -57,6 +61,7 @@
     "message": "Password changed successfully"
   }
   ```
+
 - **响应状态码**:
 
   - 200: 密码修改成功
@@ -76,6 +81,7 @@
   ```
   Authorization: Bearer <access_token>
   ```
+
 - **请求参数**:
 
   ```json
@@ -88,6 +94,7 @@
     "phone": "string"          // 联系电话（可选）
   }
   ```
+
 - **响应参数**:
 
   ```json
@@ -99,6 +106,7 @@
     "created_at": "string"     // 创建时间
   }
   ```
+
 - **响应状态码**:
 
   - 201: 创建成功
@@ -115,6 +123,7 @@
   ```
   Authorization: Bearer <access_token>
   ```
+
 - **路径参数**:
 
   - `admin_id`: 管理员ID
@@ -126,6 +135,7 @@
     "admin_id": "integer"
   }
   ```
+
 - **响应状态码**:
 
   - 200: 删除成功
@@ -144,6 +154,7 @@
   ```
   Authorization: Bearer <access_token>
   ```
+
 - **请求参数**:
 
   ```json
@@ -156,6 +167,7 @@
     "phone": "string"          // 联系电话，11位
   }
   ```
+
 - **响应参数**:
 
   ```json
@@ -167,6 +179,7 @@
     "created_at": "string"     // 创建时间
   }
   ```
+
 - **响应状态码**:
 
   - 201: 创建成功
@@ -184,11 +197,13 @@
   Authorization: Bearer <access_token>
   Content-Type: multipart/form-data
   ```
+
 - **请求参数**:
 
   ```
   excel_file: Excel文件 (.xlsx 或 .xls)
   ```
+
 - **Excel文件格式要求**:
 
   - 必须包含以下列：
@@ -206,6 +221,7 @@
     T2024001,张老师,zhang@example.com,副教授,计算机科学系,13800138001
     T2024002,李老师,li@example.com,讲师,计算机科学系,13800138002
     ```
+
 - **响应参数**:
 
   ```json
@@ -218,6 +234,7 @@
 
   ]
   ```
+
 - **响应状态码**:
 
   - 201: 导入成功
@@ -234,6 +251,7 @@
   ```
   Authorization: Bearer <access_token>
   ```
+
 - **路径参数**:
 
   - `teacher_id`: 教师编号
@@ -245,6 +263,7 @@
     "teacher_id": "string"
   }
   ```
+
 - **响应状态码**:
 
   - 200: 删除成功
@@ -261,12 +280,14 @@
   ```
   Authorization: Bearer <access_token>
   ```
+
 - **查询参数**:
 
   ```
   title: string       // 职称（可选）
   department: string  // 院系（可选）
   ```
+
 - **响应参数**:
 
   ```json
@@ -299,6 +320,7 @@
   Authorization: Bearer <access_token>
   Content-Type: multipart/form-data
   ```
+
 - **请求参数**:
 
   ```
@@ -314,6 +336,7 @@
   }
   face_image: 图片文件 (.jpg 或 .png)
   ```
+
 - **响应参数**:
 
   ```json
@@ -322,6 +345,7 @@
               "student_id": "学号"
   }
   ```
+
 - **响应状态码**:
 
   - 201: 创建成功
@@ -338,6 +362,7 @@
   ```
   Authorization: Bearer <access_token>
   ```
+
 - **查询参数**:
 
   ```
@@ -346,6 +371,7 @@
   major: string        // 专业（可选）
   grade: string        // 年级（可选）
   ```
+
 - **响应参数**:
 
   ```json
@@ -370,6 +396,7 @@
     ]
   }
   ```
+
 - **响应状态码**:
 
   - 200: 查询成功
@@ -386,12 +413,14 @@
   Authorization: Bearer <access_token>
   Content-Type: multipart/form-data
   ```
+
 - **请求参数**:
 
   ```
   excel_file: Excel文件 (.xlsx 或 .xls)
   face_images: zip文件，包含人脸图片
   ```
+
 - **Excel文件格式要求**:
 
   - 必须包含以下列：
@@ -410,6 +439,7 @@
     S2024001,张三,zhangsan@example.com,计算机2401,计算机科学系,计算机科学与技术,2024
     S2024002,李四,lisi@example.com,计算机2401,计算机科学系,计算机科学与技术,2024
     ```
+
 - **人脸图片要求**:
 
   - 图片命名格式：`学号.jpg`
@@ -430,6 +460,7 @@
     }
   ]
   ```
+
 - **响应状态码**:
 
   - 201: 导入成功
@@ -446,6 +477,7 @@
   ```
   Authorization: Bearer <access_token>
   ```
+
 - **路径参数**:
 
   - `student_id`: 学号
@@ -457,6 +489,7 @@
     "student_id": "string"
   }
   ```
+
 - **响应状态码**:
 
   - 200: 删除成功
