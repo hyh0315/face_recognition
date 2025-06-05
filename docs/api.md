@@ -270,6 +270,53 @@
   - 403: 权限不足
   - 404: 教师不存在
 
+### 4. 修改教师信息
+
+- **接口路径**: `/api/v1/teacher/teacher/{teacher_id}`
+- **请求方式**: PUT
+- **接口描述**: 修改教师信息，只能修改查询时展示在前端的字段
+- **请求头**:
+
+  ```
+  Authorization: Bearer <access_token>
+  ```
+
+- **路径参数**:
+
+  - `teacher_id`: 教师编号
+- **请求参数**:
+
+  ```json
+  {
+    "name": "string",          // 姓名，2-50个字符
+    "title": "string",         // 职称，2-50个字符
+    "department": "string",    // 院系，2-100个字符
+    "phone": "string",         // 联系电话，11位
+    "email": "string"          // 邮箱地址
+  }
+  ```
+
+- **响应参数**:
+
+  ```json
+  {
+    "id": "integer",           // 用户ID
+    "teacher_id": "string",    // 教师编号
+    "name": "string",          // 姓名
+    "title": "string",         // 职称
+    "department": "string",    // 院系
+    "phone": "string",         // 联系电话
+    "email": "string"          // 邮箱
+  }
+  ```
+
+- **响应状态码**:
+
+  - 200: 修改成功
+  - 400: 参数错误
+  - 403: 权限不足
+  - 404: 教师不存在
+
 ### 2. 查询教师列表
 
 - **接口路径**: `/api/v1/teacher/teachers`
@@ -493,6 +540,60 @@
 - **响应状态码**:
 
   - 200: 删除成功
+  - 403: 权限不足
+  - 404: 学生不存在
+
+### 5. 修改学生信息
+
+- **接口路径**: `/api/v1/student/student/{student_id}`
+- **请求方式**: PUT
+- **接口描述**: 修改学生信息，只能修改查询时展示在前端的字段
+- **请求头**:
+
+  ```
+  Authorization: Bearer <access_token>
+  ```
+
+- **路径参数**:
+
+  - `student_id`: 学号
+- **请求参数**:
+
+  ```json
+  {
+    "name": "string",          // 姓名，2-50个字符
+    "class_name": "string",    // 班级，2-50个字符
+    "department": "string",    // 院系，2-100个字符
+    "major": "string",         // 专业，2-100个字符
+    "grade": "string",         // 年级，4位
+    "email": "string"          // 邮箱地址
+  }
+  ```
+
+- **响应参数**:
+
+  ```json
+  {
+    "id": "integer",           // 用户ID
+    "student_id": "string",    // 学号
+    "name": "string",          // 姓名
+    "department": "string",    // 院系
+    "major": "string",         // 专业
+    "grade": "string",         // 年级
+    "class_name": "string",    // 班级
+    "email": "string",         // 邮箱
+    "total_attendance_count": "integer", // 总出勤次数
+    "total_late_count": "integer",      // 总迟到次数
+    "total_absence_count": "integer",   // 总缺勤次数
+    "total_leave_count": "integer",     // 总请假次数
+    "created_by": "integer"    // 创建者ID
+  }
+  ```
+
+- **响应状态码**:
+
+  - 200: 修改成功
+  - 400: 参数错误
   - 403: 权限不足
   - 404: 学生不存在
 

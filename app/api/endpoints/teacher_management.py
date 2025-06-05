@@ -5,7 +5,7 @@ from app.core.security import get_password_hash
 from app.db.base import get_db
 from app.schemas.auth import (
     UserType, TokenData, TeacherResponse, TeacherCreate,
-    TeacherFilter, TeacherListResponse
+    TeacherFilter, TeacherListResponse, TeacherUpdate
 )
 from app.db.models.teacher import Teacher
 from app.api.deps import get_current_user
@@ -350,4 +350,70 @@ async def get_teachers(
     return TeacherListResponse(
         total=len(teachers),
         items=teachers
-    ) 
+    )
+
+@router.put(
+    "/teacher/{teacher_id}",
+    response_model=TeacherResponse,
+    summary="修改教师信息",
+    description="""
+    修改教师信息。
+    - 需要管理员权限
+    - 只能修改查询时展示在前端的字段
+    """,
+    responses={
+        200: {"description": "成功修改教师信息"},
+        400: {"description": "参数错误"},
+        403: {"description": "权限不足"},
+        404: {"description": "教师不存在"}
+    }
+)
+async def update_teacher(
+    teacher_id: str,
+    teacher_data: TeacherUpdate,
+    current_user: TokenData = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    修改教师信息
+    
+    参数:
+        teacher_id: 教师编号
+        teacher_data: 要修改的教师信息
+        current_user: 当前登录用户信息
+        db: 数据库会话
+    
+    返回:
+        TeacherResponse: 修改后的教师信息
+    """
+    # 检查当前用户是否为管理员
+    if current_user.user_type != UserType.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admin can update teacher information"
+        )
+
+    # 查找教师
+    teacher = db.query(Teacher).filter(Teacher.teacher_id == teacher_id).first()
+    if not teacher:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Teacher with ID {teacher_id} not found"
+        )
+
+    try:
+        # 更新教师信息
+        for field, value in teacher_data.dict(exclude_unset=True).items():
+            setattr(teacher, field, value)
+
+        db.commit()
+        db.refresh(teacher)
+
+        return teacher
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to update teacher: {str(e)}"
+        ) 

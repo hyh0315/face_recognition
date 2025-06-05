@@ -47,6 +47,15 @@ class TeacherCreate(BaseModel):
     department: str = Field(..., min_length=2, max_length=100)
     phone: str = Field(..., min_length=11, max_length=11)
 
+class TeacherUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=2, max_length=50)
+    title: Optional[str] = Field(None, min_length=2, max_length=50)
+    department: Optional[str] = Field(None, min_length=2, max_length=100)
+    phone: Optional[str] = Field(None, min_length=11, max_length=11)
+    email: Optional[EmailStr] = None
+    class Config:
+        orm_mode = True
+
 class StudentCreate(BaseModel):
     student_id: str = Field(..., min_length=3, max_length=20)
     email: EmailStr
@@ -56,6 +65,17 @@ class StudentCreate(BaseModel):
     major: str = Field(..., min_length=2, max_length=100)
     grade: str = Field(..., min_length=4, max_length=4)
     face_image: str = Field(..., description="Base64编码的人脸图片数据")
+
+class StudentUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=2, max_length=50)
+    class_name: Optional[str] = Field(None, min_length=2, max_length=50)
+    department: Optional[str] = Field(None, min_length=2, max_length=100)
+    major: Optional[str] = Field(None, min_length=2, max_length=100)
+    grade: Optional[str] = Field(None, min_length=4, max_length=4)
+    email: Optional[EmailStr] = None
+
+    class Config:
+        orm_mode = True
 
 class StudentResponse(BaseModel):
     id: int
@@ -74,6 +94,7 @@ class StudentResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
 class TeacherResponse(BaseModel):
     id: int
     teacher_id: str

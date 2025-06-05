@@ -5,7 +5,8 @@ from app.core.security import get_password_hash
 from app.db.base import get_db
 from app.schemas.auth import (
     UserType, TokenData, StudentResponse,
-    StudentCreate, StudentFilter, StudentListResponse
+    StudentCreate, StudentFilter, StudentListResponse,
+    StudentUpdate
 )
 from app.db.models.student import Student
 from app.api.deps import get_current_user
@@ -409,4 +410,70 @@ async def delete_student(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete student: {str(e)}"
+        )
+
+@router.put(
+    "/student/{student_id}",
+    response_model=StudentResponse,
+    summary="修改学生信息",
+    description="""
+    修改学生信息。
+    - 需要管理员权限
+    - 只能修改查询时展示在前端的字段
+    """,
+    responses={
+        200: {"description": "成功修改学生信息"},
+        400: {"description": "参数错误"},
+        403: {"description": "权限不足"},
+        404: {"description": "学生不存在"}
+    }
+)
+async def update_student(
+    student_id: str,
+    student_data: StudentUpdate,
+    current_user: TokenData = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    修改学生信息
+    
+    参数:
+        student_id: 学号
+        student_data: 要修改的学生信息
+        current_user: 当前登录用户信息
+        db: 数据库会话
+    
+    返回:
+        StudentResponse: 修改后的学生信息
+    """
+    # 检查当前用户是否为管理员
+    if current_user.user_type != UserType.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admin can update student information"
+        )
+
+    # 查找学生
+    student = db.query(Student).filter(Student.student_id == student_id).first()
+    if not student:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Student with ID {student_id} not found"
+        )
+
+    try:
+        # 更新学生信息
+        for field, value in student_data.dict(exclude_unset=True).items():
+            setattr(student, field, value)
+
+        db.commit()
+        db.refresh(student)
+
+        return student
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to update student: {str(e)}"
         ) 
