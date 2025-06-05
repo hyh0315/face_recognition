@@ -273,11 +273,13 @@
 
   ```
   Authorization: Bearer <access_token>
+  Content-Type: multipart/form-data
   ```
 
 - **请求参数**:
 
-  ```json
+  ```
+  student_data: JSON字符串，包含以下字段：
   {
     "student_id": "string",    // 学号，3-20个字符
     "email": "string",         // 邮箱地址
@@ -285,9 +287,9 @@
     "class_name": "string",    // 班级，2-50个字符
     "department": "string",    // 院系，2-100个字符
     "major": "string",         // 专业，2-100个字符
-    "grade": "string",         // 年级，4位
-    "face_image": "string"     // Base64编码的人脸图片数据
+    "grade": "string"          // 年级，4位
   }
+  face_image: 图片文件 (.jpg 或 .png)
   ```
 
 - **响应参数**:
@@ -388,7 +390,7 @@
 - **人脸图片要求**:
   - 图片命名格式：`学号.jpg`
   - 图片要求：
-    - 格式：JPG
+    - 格式：JPG或PNG
     - 大小：不超过2MB
     - 内容：正面免冠照片，光线充足，面部清晰
 
@@ -475,12 +477,11 @@
    - 格式：JPG或PNG
    - 大小：不超过2MB
    - 内容：正面免冠照片，光线充足，面部清晰
-   - 编码：Base64格式
 9. 批量导入学生时：
    - Excel文件必须使用UTF-8编码
    - 学号和邮箱不能重复
    - 如果学号或邮箱已存在，该条记录会被跳过
-   - 导入后需要单独上传每个学生的人脸图片
+   - 需要同时上传包含所有人脸图片的zip文件
 10. 删除管理员账号时：
     - 不能删除自己
     - 不能删除最后一个超级管理员
@@ -492,160 +493,59 @@
     - 会同时删除学生的人脸编码数据
     - 会同时删除学生的考勤记录
 
-## 文件服务器说明
+## 文件上传说明
 
-### FTP服务器配置
+### 文件存储结构
 
-- **服务器地址**: 由配置文件指定（默认：127.0.0.1）
-- **服务器端口**: 由配置文件指定（默认：2121）
-- **访问方式**:
-  - 匿名FTP（只读）
-  - 用户认证（读写）
-- **安全协议**: FTPS (FTP over SSL/TLS)
-- **异步支持**:
-  - 内置异步文件传输
-  - 支持并发连接
-  - 非阻塞IO操作
-- **并发配置**:
-  - 最大连接数: 256
-  - 每IP最大连接数: 5
-  - 被动模式端口范围: 60000-65535
-- **文件存储结构**:
+```
+uploads/
+├── excel_files/          # Excel文件
+│   ├── students/         # 学生导入文件
+│   │   └── YYYYMMDD_HHMMSS/
+│   │       └── students.xlsx
+│   └── teachers/         # 教师导入文件
+│       └── YYYYMMDD_HHMMSS/
+│           └── teachers.xlsx
+└── face_images/          # 人脸图片
+    └── students/         # 学生人脸图片
+        └── YYYYMMDD_HHMMSS/
+            ├── S2024001.jpg
+            ├── S2024002.jpg
+            └── ...
+```
 
-  ```
-  uploads/
-  ├── excel_files/          # Excel文件
-  │   ├── students/         # 学生导入文件
-  │   │   └── YYYYMMDD_HHMMSS/
-  │   │       └── students.xlsx
-  │   └── teachers/         # 教师导入文件
-  │       └── YYYYMMDD_HHMMSS/
-  │           └── teachers.xlsx
-  └── face_images/          # 人脸图片
-      └── students/         # 学生人脸图片
-          └── YYYYMMDD_HHMMSS/
-              ├── S2024001.jpg
-              ├── S2024002.jpg
-              └── ...
-  ```
-
-### 异步文件操作
-
-1. **内置异步特性**:
-   - 使用`select`/`poll`进行非阻塞IO
-   - 文件传输在独立线程中执行
-   - 支持并发文件操作
-   - 自动处理连接池
-
-2. **文件传输回调**:
-
-   ```python
-   # 文件上传完成
-   on_file_received(file)
-   
-   # 文件下载完成
-   on_file_sent(file)
-   
-   # 文件上传失败
-   on_incomplete_file_received(file)
-   
-   # 文件下载失败
-   on_incomplete_file_sent(file)
-   ```
-
-3. **性能优势**:
-   - 非阻塞文件传输
-   - 并发连接处理
-   - 自动负载均衡
-   - 资源使用优化
-
-### 前端直接访问FTP
-
-1. **使用方式**:
-
-   ```javascript
-   // 使用ftp.js库
-   import { Client } from 'ftp';
-   
-   const client = new Client();
-   
-   // 连接FTP服务器
-   client.connect({
-     host: '127.0.0.1',
-     port: 2121,
-     secure: true,  // 启用SSL/TLS
-     user: 'anonymous',
-     password: 'anonymous'
-   });
-   
-   // 异步上传文件
-   async function uploadFile(localPath, remotePath) {
-     try {
-       await client.put(localPath, remotePath);
-       console.log('文件上传成功');
-     } catch (err) {
-       console.error('文件上传失败:', err);
-     }
-   }
-   
-   // 异步下载文件
-   async function downloadFile(remotePath, localPath) {
-     try {
-       await client.get(remotePath, localPath);
-       console.log('文件下载成功');
-     } catch (err) {
-       console.error('文件下载失败:', err);
-     }
-   }
-   ```
-
-2. **推荐的前端库**:
-   - [ftp.js](https://github.com/patrickjuchli/basic-ftp): 支持异步操作的FTP客户端
-   - [jsftp](https://github.com/sergi/jsftp): 支持Promise的FTP客户端
-   - [browser-ftp](https://github.com/robinjoseph08/browser-ftp): 浏览器端异步FTP客户端
-
-3. **注意事项**:
-   - 使用FTPS协议确保传输安全
-   - 大文件建议使用断点续传
-   - 使用WebSocket保持连接
-   - 处理连接超时和重连
-   - 实现错误重试机制
-
-### 文件访问说明
+### 文件上传要求
 
 1. **Excel文件**:
-   - 批量导入的Excel文件自动保存到FTP服务器
-   - 按时间戳分类存储
-   - 支持异步上传和下载
-   - 支持并发操作
+   - 格式：.xlsx 或 .xls
+   - 编码：UTF-8
+   - 大小：不超过2MB
+   - 必须包含指定的列名
 
 2. **人脸图片**:
-   - 学生人脸图片按批次存储
-   - 图片命名格式：`学号.jpg`
-   - 支持异步上传和下载
-   - 支持并发处理
-   - 支持图片预览
+   - 格式：JPG或PNG
+   - 大小：不超过2MB
+   - 命名规则：学号.jpg
+   - 内容要求：正面免冠照片，光线充足，面部清晰
 
 ### 性能优化建议
 
 1. **前端优化**:
-   - 使用WebSocket保持连接
-   - 实现断点续传
    - 使用文件分片上传
    - 添加进度条显示
    - 实现文件队列管理
    - 使用异步操作处理文件
+   - 添加文件类型和大小验证
 
 2. **服务器优化**:
-   - 启用被动模式
-   - 配置连接池
-   - 设置合理的超时时间
-   - 启用压缩传输
+   - 使用异步IO处理文件
+   - 配置合理的超时时间
+   - 启用文件压缩
    - 配置缓存策略
-   - 利用异步IO提升性能
+   - 定期清理临时文件
 
 3. **安全建议**:
-   - 使用FTPS协议
+   - 使用HTTPS确保传输安全
    - 限制文件大小
    - 验证文件类型
    - 定期清理临时文件

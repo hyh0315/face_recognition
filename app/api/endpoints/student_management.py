@@ -10,7 +10,6 @@ from app.schemas.auth import (
 from app.db.models.student import Student
 from app.api.deps import get_current_user
 from app.core.face_recognition import process_face_image, save_face_encoding, delete_face_encoding
-from app.core.ftp_server import ftp_service
 from app.core.config import settings
 import secrets
 import base64
@@ -20,7 +19,6 @@ from typing import List
 import zipfile
 import tempfile
 import os
-import ftplib
 from datetime import datetime
 import logging
 
@@ -35,7 +33,7 @@ router = APIRouter()
     - 需要管理员权限
     - 自动生成初始密码
     - 账号默认未激活，需要学生首次登录修改密码
-    - 需要上传学生人脸图片到FTP服务器
+    - 需要上传学生人脸图片
     """,
     responses={
         201: {"description": "成功创建学生账号"},
@@ -45,7 +43,7 @@ router = APIRouter()
 )
 async def create_student(
     student_data: StudentCreate,
-    face_image_path: str,  # FTP服务器上的人脸图片路径
+    face_image: UploadFile = File(...),
     current_user: TokenData = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -54,7 +52,7 @@ async def create_student(
     
     参数:
         student_data: 学生信息
-        face_image_path: FTP服务器上的人脸图片路径
+        face_image: 人脸图片文件
         current_user: 当前登录用户信息
         db: 数据库会话
     
@@ -81,19 +79,9 @@ async def create_student(
         )
 
     try:
-        # 从FTP服务器下载人脸图片
-        with tempfile.TemporaryDirectory() as temp_dir:
-            face_image_local_path = os.path.join(temp_dir, f"{student_data.student_id}.jpg")
-            with ftplib.FTP() as ftp:
-                ftp.connect(settings.FTP_SERVER_HOST, settings.FTP_SERVER_PORT)
-                ftp.login()  # 匿名登录
-                with open(face_image_local_path, 'wb') as f:
-                    ftp.retrbinary(f'RETR {face_image_path}', f.write)
-
-            # 处理人脸图片
-            with open(face_image_local_path, 'rb') as f:
-                face_image_data = f.read()
-            face_encoding = process_face_image(face_image_data)
+        # 处理人脸图片
+        face_image_data = await face_image.read()
+        face_encoding = process_face_image(face_image_data)
         
         # 生成初始密码
         initial_password = secrets.token_urlsafe(8)
@@ -212,9 +200,8 @@ async def get_students(
     description="""
     批量导入学生账号。
     - 需要管理员权限
-    - 前端需要先将Excel文件和zip文件上传到FTP服务器
     - Excel文件必须包含以下列：学号、姓名、邮箱、班级、院系、专业、年级
-    - zip文件中的图片命名格式为：学号.jpg
+    - 需要同时上传一个zip文件，包含所有学生的人脸图片，图片命名格式为：学号.jpg
     """,
     responses={
         201: {"description": "成功导入学生账号"},
@@ -223,8 +210,8 @@ async def get_students(
     }
 )
 async def batch_create_students(
-    excel_path: str,  # FTP服务器上的Excel文件路径
-    face_images_path: str,  # FTP服务器上的zip文件路径
+    excel_file: UploadFile = File(...),
+    face_images: UploadFile = File(...),
     current_user: TokenData = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -232,8 +219,8 @@ async def batch_create_students(
     批量导入学生账号
     
     参数:
-        excel_path: FTP服务器上的Excel文件路径
-        face_images_path: FTP服务器上的zip文件路径
+        excel_file: Excel文件
+        face_images: 包含人脸图片的zip文件
         current_user: 当前登录用户信息
         db: 数据库会话
     
@@ -247,38 +234,42 @@ async def batch_create_students(
             detail="Only admin can batch create student accounts"
         )
 
+    # 检查Excel文件类型
+    if not excel_file.filename or not excel_file.filename.endswith(('.xlsx', '.xls')):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only Excel files (.xlsx, .xls) are allowed"
+        )
+
+    # 检查zip文件类型
+    if not face_images.filename or not face_images.filename.endswith('.zip'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Face images must be uploaded as a zip file"
+        )
+
     try:
-        # 从FTP服务器下载Excel文件
+        # 读取Excel文件
+        contents = await excel_file.read()
+        df = pd.read_excel(BytesIO(contents))
+
+        # 验证必要的列是否存在
+        required_columns = ['学号', '姓名', '邮箱', '班级', '院系', '专业', '年级']
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Missing required columns: {', '.join(missing_columns)}"
+            )
+
+        # 读取并解压人脸图片zip文件
+        face_images_content = await face_images.read()
         with tempfile.TemporaryDirectory() as temp_dir:
-            excel_local_path = os.path.join(temp_dir, "students.xlsx")
-            with ftplib.FTP() as ftp:
-                ftp.connect(settings.FTP_SERVER_HOST, settings.FTP_SERVER_PORT)
-                ftp.login()  # 匿名登录
-                with open(excel_local_path, 'wb') as f:
-                    ftp.retrbinary(f'RETR {excel_path}', f.write)
+            zip_path = os.path.join(temp_dir, "face_images.zip")
+            with open(zip_path, "wb") as f:
+                f.write(face_images_content)
 
-            # 读取Excel文件
-            df = pd.read_excel(excel_local_path)
-
-            # 验证必要的列是否存在
-            required_columns = ['学号', '姓名', '邮箱', '班级', '院系', '专业', '年级']
-            missing_columns = [col for col in required_columns if col not in df.columns]
-            if missing_columns:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Missing required columns: {', '.join(missing_columns)}"
-                )
-
-            # 从FTP服务器下载zip文件
-            zip_local_path = os.path.join(temp_dir, "face_images.zip")
-            with ftplib.FTP() as ftp:
-                ftp.connect(settings.FTP_SERVER_HOST, settings.FTP_SERVER_PORT)
-                ftp.login()  # 匿名登录
-                with open(zip_local_path, 'wb') as f:
-                    ftp.retrbinary(f'RETR {face_images_path}', f.write)
-
-            # 解压人脸图片
-            with zipfile.ZipFile(zip_local_path, 'r') as zip_ref:
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                 zip_ref.extractall(temp_dir)
 
             # 创建学生账号
@@ -357,7 +348,6 @@ async def batch_create_students(
     - 需要管理员权限
     - 会同时删除学生的人脸编码数据
     - 会同时删除学生的考勤记录
-    - 会同时删除FTP服务器上的人脸图片
     """,
     responses={
         200: {"description": "成功删除学生账号"},
@@ -399,25 +389,6 @@ async def delete_student(
     try:
         # 删除学生的人脸编码数据
         delete_face_encoding(student_id)
-
-        # 删除FTP服务器上的人脸图片
-        try:
-            with ftplib.FTP() as ftp:
-                ftp.connect(settings.FTP_SERVER_HOST, settings.FTP_SERVER_PORT)
-                ftp.login()  # 匿名登录
-                
-                # 遍历所有批次目录
-                for root in ftp.nlst("face_images/students"):
-                    try:
-                        ftp.cwd(f"face_images/students/{root}")
-                        # 检查并删除对应的人脸图片
-                        if f"{student_id}.jpg" in ftp.nlst():
-                            ftp.delete(f"{student_id}.jpg")
-                    except Exception as e:
-                        logging.error(f"Failed to process directory {root}: {str(e)}")
-                        continue
-        except Exception as e:
-            logging.error(f"Failed to delete face image from FTP server: {str(e)}")
 
         # 删除学生账号
         db.delete(student)

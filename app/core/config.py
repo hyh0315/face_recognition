@@ -14,7 +14,7 @@ class Settings(BaseSettings):
         env_file = ".env"
 
     # 数据库配置
-    DATABASE_URL: str = "sqlite:///./app.db"
+    DATABASE_URL: str = "sqlite:///./face_recognition.db"
 
     # 文件服务器配置
     FILE_SERVER_BASE_DIR: str = "uploads"
@@ -22,16 +22,6 @@ class Settings(BaseSettings):
     FILE_SERVER_MAX_FILE_SIZE: int = 2 * 1024 * 1024  # 2MB
     FILE_SERVER_ALLOWED_IMAGE_TYPES: list = ["image/jpeg", "image/png"]
     FILE_SERVER_ALLOWED_EXCEL_TYPES: list = ["application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]
-
-    # FTP服务器配置
-    FTP_SERVER_HOST: str = "127.0.0.1"
-    FTP_SERVER_PORT: int = 2121
-    FTP_SERVER_MAX_CONNECTIONS: int = 256
-    FTP_SERVER_MAX_CONNECTIONS_PER_IP: int = 5
-    FTP_SERVER_PASSIVE_PORTS_START: int = 60000
-    FTP_SERVER_PASSIVE_PORTS_END: int = 65535
-    FTP_SERVER_ANONYMOUS_ACCESS: bool = True
-    FTP_SERVER_ANONYMOUS_PERMISSIONS: str = "elradfmw"  # 所有权限
 
     # 人脸识别配置
     FACE_RECOGNITION_MODEL: str = "cnn"  # 或 "cnn"

@@ -5,16 +5,14 @@ from app.db.base import get_db
 from app.schemas.auth import UserType, TokenData, UserResponse, TeacherCreate
 from app.db.models.teacher import Teacher
 from app.api.deps import get_current_user
-from app.core.ftp_server import ftp_service
 from app.core.config import settings
 import secrets
 import pandas as pd
 from io import BytesIO
 from typing import List
-import ftplib
-from datetime import datetime
 import tempfile
 import os
+from datetime import datetime
 
 router = APIRouter()
 
@@ -69,30 +67,37 @@ async def create_teacher(
             detail="Email already registered"
         )
 
-    # 生成初始密码
-    initial_password = secrets.token_urlsafe(8)
-    hashed_password = get_password_hash(initial_password)
+    try:
+        # 生成初始密码
+        initial_password = secrets.token_urlsafe(8)
+        hashed_password = get_password_hash(initial_password)
 
-    # 创建教师账号
-    db_teacher = Teacher(
-        teacher_id=teacher_data.teacher_id,
-        username=teacher_data.teacher_id,  # 使用教师编号作为用户名
-        email=teacher_data.email,
-        hashed_password=hashed_password,
-        initial_password=hashed_password,  # 保存初始密码的哈希值
-        name=teacher_data.name,
-        title=teacher_data.title,
-        department=teacher_data.department,
-        phone=teacher_data.phone,
-        created_by=current_user.user_id
-    )
+        # 创建教师账号
+        db_teacher = Teacher(
+            teacher_id=teacher_data.teacher_id,
+            username=teacher_data.teacher_id,  # 使用教师编号作为用户名
+            email=teacher_data.email,
+            hashed_password=hashed_password,
+            initial_password=hashed_password,  # 保存初始密码的哈希值
+            name=teacher_data.name,
+            title=teacher_data.title,
+            department=teacher_data.department,
+            phone=teacher_data.phone,
+            created_by=current_user.user_id
+        )
 
-    db.add(db_teacher)
-    db.commit()
-    db.refresh(db_teacher)
+        db.add(db_teacher)
+        db.commit()
+        db.refresh(db_teacher)
 
-    # 返回教师信息（不包含密码）
-    return db_teacher
+        return db_teacher
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to create teacher account: {str(e)}"
+        )
 
 @router.post(
     "/teachers/batch",
@@ -101,7 +106,6 @@ async def create_teacher(
     description="""
     批量导入教师账号。
     - 需要管理员权限
-    - 前端需要先将Excel文件上传到FTP服务器
     - Excel文件必须包含以下列：教师编号、姓名、邮箱、职称、院系、手机号
     - 自动生成初始密码
     - 账号默认未激活，需要教师首次登录修改密码
@@ -113,7 +117,7 @@ async def create_teacher(
     }
 )
 async def batch_create_teachers(
-    excel_path: str,  # FTP服务器上的Excel文件路径
+    excel_file: UploadFile = File(...),
     current_user: TokenData = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -121,7 +125,7 @@ async def batch_create_teachers(
     批量导入教师账号
     
     参数:
-        excel_path: FTP服务器上的Excel文件路径
+        excel_file: Excel文件
         current_user: 当前登录用户信息
         db: 数据库会话
     
@@ -135,69 +139,68 @@ async def batch_create_teachers(
             detail="Only admin can batch create teacher accounts"
         )
 
+    # 检查Excel文件类型
+    if not excel_file.filename or not excel_file.filename.endswith(('.xlsx', '.xls')):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only Excel files (.xlsx, .xls) are allowed"
+        )
+
     try:
-        # 从FTP服务器下载Excel文件
-        with tempfile.TemporaryDirectory() as temp_dir:
-            excel_local_path = os.path.join(temp_dir, "teachers.xlsx")
-            with ftplib.FTP() as ftp:
-                ftp.connect(settings.FTP_SERVER_HOST, settings.FTP_SERVER_PORT)
-                ftp.login()  # 匿名登录
-                with open(excel_local_path, 'wb') as f:
-                    ftp.retrbinary(f'RETR {excel_path}', f.write)
+        # 读取Excel文件
+        contents = await excel_file.read()
+        df = pd.read_excel(BytesIO(contents))
 
-            # 读取Excel文件
-            df = pd.read_excel(excel_local_path)
+        # 验证必要的列是否存在
+        required_columns = ['教师编号', '姓名', '邮箱', '职称', '院系', '手机号']
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Missing required columns: {', '.join(missing_columns)}"
+            )
 
-            # 验证必要的列是否存在
-            required_columns = ['教师编号', '姓名', '邮箱', '职称', '院系', '手机号']
-            missing_columns = [col for col in required_columns if col not in df.columns]
-            if missing_columns:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Missing required columns: {', '.join(missing_columns)}"
+        # 创建教师账号
+        created_teachers = []
+        for _, row in df.iterrows():
+            teacher_id = str(row['教师编号'])
+
+            # 检查教师编号和邮箱是否已存在
+            if db.query(Teacher).filter(Teacher.teacher_id == teacher_id).first():
+                continue
+            if db.query(Teacher).filter(Teacher.email == row['邮箱']).first():
+                continue
+
+            try:
+                # 生成初始密码
+                initial_password = secrets.token_urlsafe(8)
+                hashed_password = get_password_hash(initial_password)
+
+                # 创建教师账号
+                db_teacher = Teacher(
+                    teacher_id=teacher_id,
+                    username=teacher_id,  # 使用教师编号作为用户名
+                    email=row['邮箱'],
+                    hashed_password=hashed_password,
+                    initial_password=hashed_password,  # 保存初始密码的哈希值
+                    name=row['姓名'],
+                    title=row['职称'],
+                    department=row['院系'],
+                    phone=row['手机号'],
+                    created_by=current_user.user_id
                 )
 
-            # 创建教师账号
-            created_teachers = []
-            for _, row in df.iterrows():
-                teacher_id = str(row['教师编号'])
+                db.add(db_teacher)
+                db.commit()
+                db.refresh(db_teacher)
+                created_teachers.append(db_teacher)
 
-                # 检查教师编号和邮箱是否已存在
-                if db.query(Teacher).filter(Teacher.teacher_id == teacher_id).first():
-                    continue
-                if db.query(Teacher).filter(Teacher.email == row['邮箱']).first():
-                    continue
-
-                try:
-                    # 生成初始密码
-                    initial_password = secrets.token_urlsafe(8)
-                    hashed_password = get_password_hash(initial_password)
-
-                    # 创建教师账号
-                    db_teacher = Teacher(
-                        teacher_id=teacher_id,
-                        username=teacher_id,  # 使用教师编号作为用户名
-                        email=row['邮箱'],
-                        hashed_password=hashed_password,
-                        initial_password=hashed_password,  # 保存初始密码的哈希值
-                        name=row['姓名'],
-                        title=row['职称'],
-                        department=row['院系'],
-                        phone=row['手机号'],
-                        created_by=current_user.user_id
-                    )
-
-                    db.add(db_teacher)
-                    db.commit()
-                    db.refresh(db_teacher)
-                    created_teachers.append(db_teacher)
-
-                except Exception as e:
-                    db.rollback()
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail=f"Failed to create teacher account for {teacher_id}: {str(e)}"
-                    )
+            except Exception as e:
+                db.rollback()
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Failed to create teacher account for {teacher_id}: {str(e)}"
+                )
 
         return created_teachers
 
