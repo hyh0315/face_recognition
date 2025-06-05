@@ -1,8 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 from app.core.security import get_password_hash
 from app.db.base import get_db
-from app.schemas.auth import UserType, TokenData, UserResponse, TeacherCreate
+from app.schemas.auth import (
+    UserType, TokenData, TeacherResponse, TeacherCreate,
+    TeacherFilter, TeacherListResponse
+)
 from app.db.models.teacher import Teacher
 from app.api.deps import get_current_user
 from app.core.config import settings
@@ -18,7 +22,6 @@ router = APIRouter()
 
 @router.post(
     "/teacher",
-    response_model=UserResponse,
     summary="创建教师账号",
     description="""
     创建新的教师账号。
@@ -46,7 +49,7 @@ async def create_teacher(
         db: 数据库会话
     
     返回:
-        UserResponse: 创建的教师信息
+        dict: 创建结果
     """
     # 检查当前用户是否为管理员
     if current_user.user_type != UserType.ADMIN:
@@ -90,7 +93,10 @@ async def create_teacher(
         db.commit()
         db.refresh(db_teacher)
 
-        return db_teacher
+        return {
+            "message": "Successfully created teacher account for {name}",
+            "teacher_id": teacher_data.teacher_id
+        }
 
     except Exception as e:
         db.rollback()
@@ -101,7 +107,6 @@ async def create_teacher(
 
 @router.post(
     "/teachers/batch",
-    response_model=List[UserResponse],
     summary="批量导入教师",
     description="""
     批量导入教师账号。
@@ -130,7 +135,7 @@ async def batch_create_teachers(
         db: 数据库会话
     
     返回:
-        List[UserResponse]: 创建的教师信息列表
+        dict: 导入结果
     """
     # 检查当前用户是否为管理员
     if current_user.user_type != UserType.ADMIN:
@@ -161,14 +166,21 @@ async def batch_create_teachers(
             )
 
         # 创建教师账号
-        created_teachers = []
+        success_count = 0
+        failed_count = 0
+        failed_teachers = []
+
         for _, row in df.iterrows():
             teacher_id = str(row['教师编号'])
 
             # 检查教师编号和邮箱是否已存在
             if db.query(Teacher).filter(Teacher.teacher_id == teacher_id).first():
+                failed_count += 1
+                failed_teachers.append(f"{teacher_id} (教师编号已存在)")
                 continue
             if db.query(Teacher).filter(Teacher.email == row['邮箱']).first():
+                failed_count += 1
+                failed_teachers.append(f"{teacher_id} (邮箱已存在)")
                 continue
 
             try:
@@ -193,16 +205,20 @@ async def batch_create_teachers(
                 db.add(db_teacher)
                 db.commit()
                 db.refresh(db_teacher)
-                created_teachers.append(db_teacher)
+                success_count += 1
 
             except Exception as e:
                 db.rollback()
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Failed to create teacher account for {teacher_id}: {str(e)}"
-                )
+                failed_count += 1
+                failed_teachers.append(f"{teacher_id} ({str(e)})")
 
-        return created_teachers
+        return {
+            "message": "Batch import completed",
+            "total": len(df),
+            "success_count": success_count,
+            "failed_count": failed_count,
+            "failed_teachers": failed_teachers
+        }
 
     except Exception as e:
         db.rollback()
@@ -272,4 +288,66 @@ async def delete_teacher(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete teacher: {str(e)}"
-        ) 
+        )
+
+@router.get(
+    "/teachers",
+    response_model=TeacherListResponse,
+    summary="查询教师列表",
+    description="""
+    查询教师列表，支持多种筛选条件：
+    - 职称
+    - 院系
+    """,
+    responses={
+        200: {"description": "成功获取教师列表"},
+        403: {"description": "权限不足"}
+    }
+)
+async def get_teachers(
+    filter_params: TeacherFilter = Depends(),
+    current_user: TokenData = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    查询教师列表
+    
+    参数:
+        filter_params: 筛选条件
+        current_user: 当前登录用户信息
+        db: 数据库会话
+    
+    返回:
+        TeacherListResponse: 包含教师列表的响应
+    """
+    # 检查权限
+    if current_user.user_type not in [UserType.ADMIN, UserType.TEACHER]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admin and teacher can view teacher list"
+        )
+
+    # 构建查询
+    query = db.query(Teacher)
+
+    # 应用筛选条件
+    filters = []
+    if filter_params.title:
+        filters.append(Teacher.title == filter_params.title)
+    if filter_params.department:
+        filters.append(Teacher.department == filter_params.department)
+
+    # 应用所有筛选条件
+    if filters:
+        query = query.filter(and_(*filters))
+
+    # 按教师编号排序
+    query = query.order_by(Teacher.teacher_id)
+
+    # 执行查询
+    teachers = query.all()
+
+    return TeacherListResponse(
+        total=len(teachers),
+        items=teachers
+    ) 

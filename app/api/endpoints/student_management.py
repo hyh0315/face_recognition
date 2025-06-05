@@ -4,7 +4,7 @@ from sqlalchemy import and_
 from app.core.security import get_password_hash
 from app.db.base import get_db
 from app.schemas.auth import (
-    UserType, TokenData, UserResponse,
+    UserType, TokenData, StudentResponse,
     StudentCreate, StudentFilter, StudentListResponse
 )
 from app.db.models.student import Student
@@ -26,7 +26,6 @@ router = APIRouter()
 
 @router.post(
     "/student",
-    response_model=UserResponse,
     summary="创建学生账号",
     description="""
     创建新的学生账号。
@@ -57,7 +56,7 @@ async def create_student(
         db: 数据库会话
     
     返回:
-        UserResponse: 创建的学生信息
+        dict: 创建结果
     """
     # 检查当前用户是否为管理员
     if current_user.user_type != UserType.ADMIN:
@@ -110,8 +109,10 @@ async def create_student(
         student_id = str(db_student.student_id)
         save_face_encoding(student_id, face_encoding)
 
-        # 返回学生信息（不包含密码）
-        return db_student
+        return {
+            "message": "Successfully created student account for {name}",
+            "student_id": "学号"
+        }
 
     except Exception as e:
         db.rollback()
@@ -130,8 +131,6 @@ async def create_student(
     - 院系
     - 专业
     - 年级
-    - 账号状态
-    - 是否毕业
     """,
     responses={
         200: {"description": "成功获取学生列表"},
@@ -174,9 +173,6 @@ async def get_students(
         filters.append(Student.major == filter_params.major)
     if filter_params.grade:
         filters.append(Student.grade == filter_params.grade)
-    if filter_params.is_active is not None:
-        filters.append(Student.is_active == filter_params.is_active)
-
 
     # 应用所有筛选条件
     if filters:
@@ -195,7 +191,6 @@ async def get_students(
 
 @router.post(
     "/students/batch",
-    response_model=List[UserResponse],
     summary="批量导入学生",
     description="""
     批量导入学生账号。
@@ -225,7 +220,7 @@ async def batch_create_students(
         db: 数据库会话
     
     返回:
-        List[UserResponse]: 创建的学生信息列表
+        dict: 导入结果
     """
     # 检查当前用户是否为管理员
     if current_user.user_type != UserType.ADMIN:
@@ -273,23 +268,29 @@ async def batch_create_students(
                 zip_ref.extractall(temp_dir)
 
             # 创建学生账号
-            created_students = []
+            success_count = 0
+            failed_count = 0
+            failed_students = []
+
             for _, row in df.iterrows():
                 student_id = str(row['学号'])
                 face_image_path = os.path.join(temp_dir, f"{student_id}.jpg")
 
                 # 检查学号和邮箱是否已存在
                 if db.query(Student).filter(Student.student_id == student_id).first():
+                    failed_count += 1
+                    failed_students.append(f"{student_id} (学号已存在)")
                     continue
                 if db.query(Student).filter(Student.email == row['邮箱']).first():
+                    failed_count += 1
+                    failed_students.append(f"{student_id} (邮箱已存在)")
                     continue
 
                 # 检查人脸图片是否存在
                 if not os.path.exists(face_image_path):
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail=f"Face image not found for student {student_id}"
-                    )
+                    failed_count += 1
+                    failed_students.append(f"{student_id} (缺少人脸图片)")
+                    continue
 
                 try:
                     # 处理人脸图片
@@ -322,16 +323,20 @@ async def batch_create_students(
 
                     # 保存人脸编码
                     save_face_encoding(student_id, face_encoding)
-                    created_students.append(db_student)
+                    success_count += 1
 
                 except Exception as e:
                     db.rollback()
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail=f"Failed to process face image for student {student_id}: {str(e)}"
-                    )
+                    failed_count += 1
+                    failed_students.append(f"{student_id} ({str(e)})")
 
-        return created_students
+        return {
+            "message": "Batch import completed",
+            "total": len(df),
+            "success_count": success_count,
+            "failed_count": failed_count,
+            "failed_students": failed_students
+        }
 
     except Exception as e:
         db.rollback()

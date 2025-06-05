@@ -57,27 +57,54 @@ class StudentCreate(BaseModel):
     grade: str = Field(..., min_length=4, max_length=4)
     face_image: str = Field(..., description="Base64编码的人脸图片数据")
 
-class UserResponse(BaseModel):
+class StudentResponse(BaseModel):
     id: int
-    username: str
-    email: str
+    student_id: str
     name: str
-    created_at: datetime
+    department: str
+    major:str
+    grade:str
+    class_name:str
+    email:EmailStr
+    total_attendance_count:int
+    total_late_count:int
+    total_absence_count:int
+    total_leave_count:int
+    created_by: int
 
     class Config:
-        from_attributes = True
+        orm_mode = True
+class TeacherResponse(BaseModel):
+    id: int
+    teacher_id: str
+    name: str
+    title: str
+    department: str
+    phone: str
+    email: EmailStr
+    class Config:
+        orm_mode=True
 
 class StudentFilter(BaseModel):
     class_name: Optional[str] = None
     department: Optional[str] = None
     major: Optional[str] = None
     grade: Optional[str] = None
-    is_active: Optional[bool] = None
-    is_graduated: Optional[bool] = None
 
 class StudentListResponse(BaseModel):
     total: int
-    items: Sequence[UserResponse]
+    items: Sequence[StudentResponse]
 
     class Config:
-        from_attributes = True 
+        orm_mode = True
+
+class TeacherFilter(BaseModel):
+    title: Optional[str] = None
+    department: Optional[str] = None
+
+class TeacherListResponse(BaseModel):
+    total: int
+    items: Sequence[TeacherResponse]
+
+    class Config:
+        orm_mode = True 

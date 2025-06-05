@@ -15,7 +15,6 @@
     "password": "string"   // 密码
   }
   ```
-
 - **响应参数**:
 
   ```json
@@ -28,8 +27,8 @@
     "need_change_password": false  // 是否需要修改密码
   }
   ```
-
 - **响应状态码**:
+
   - 200: 登录成功
   - 401: 用户名或密码错误
 
@@ -43,7 +42,6 @@
   ```
   Authorization: Bearer <access_token>
   ```
-
 - **请求参数**:
 
   ```json
@@ -52,7 +50,6 @@
     "new_password": "string"   // 新密码
   }
   ```
-
 - **响应参数**:
 
   ```json
@@ -60,8 +57,8 @@
     "message": "Password changed successfully"
   }
   ```
-
 - **响应状态码**:
+
   - 200: 密码修改成功
   - 400: 旧密码错误
   - 401: 未授权访问
@@ -79,7 +76,6 @@
   ```
   Authorization: Bearer <access_token>
   ```
-
 - **请求参数**:
 
   ```json
@@ -92,7 +88,6 @@
     "phone": "string"          // 联系电话（可选）
   }
   ```
-
 - **响应参数**:
 
   ```json
@@ -104,8 +99,8 @@
     "created_at": "string"     // 创建时间
   }
   ```
-
 - **响应状态码**:
+
   - 201: 创建成功
   - 400: 参数错误或用户名/邮箱已存在
   - 403: 权限不足
@@ -120,10 +115,9 @@
   ```
   Authorization: Bearer <access_token>
   ```
-
 - **路径参数**:
-  - `admin_id`: 管理员ID
 
+  - `admin_id`: 管理员ID
 - **响应参数**:
 
   ```json
@@ -132,8 +126,8 @@
     "admin_id": "integer"
   }
   ```
-
 - **响应状态码**:
+
   - 200: 删除成功
   - 403: 权限不足或不能删除自己/最后一个超级管理员
   - 404: 管理员不存在
@@ -150,7 +144,6 @@
   ```
   Authorization: Bearer <access_token>
   ```
-
 - **请求参数**:
 
   ```json
@@ -163,7 +156,6 @@
     "phone": "string"          // 联系电话，11位
   }
   ```
-
 - **响应参数**:
 
   ```json
@@ -175,8 +167,8 @@
     "created_at": "string"     // 创建时间
   }
   ```
-
 - **响应状态码**:
+
   - 201: 创建成功
   - 400: 参数错误或教师编号/邮箱已存在
   - 403: 权限不足
@@ -192,15 +184,15 @@
   Authorization: Bearer <access_token>
   Content-Type: multipart/form-data
   ```
-
 - **请求参数**:
 
   ```
   excel_file: Excel文件 (.xlsx 或 .xls)
   ```
-
 - **Excel文件格式要求**:
+
   - 必须包含以下列：
+
     - 教师编号
     - 姓名
     - 邮箱
@@ -214,22 +206,20 @@
     T2024001,张老师,zhang@example.com,副教授,计算机科学系,13800138001
     T2024002,李老师,li@example.com,讲师,计算机科学系,13800138002
     ```
-
 - **响应参数**:
 
   ```json
   [
-    {
-      "id": "integer",           // 用户ID
-      "username": "string",      // 用户名（教师编号）
-      "email": "string",         // 邮箱
-      "name": "string",          // 姓名
-      "created_at": "string"     // 创建时间
-    }
+              "message": "Batch import completed",
+              "total": len(df),
+              "success_count": success_count,
+              "failed_count": failed_count,
+              "failed_teachers": failed_teachers
+
   ]
   ```
-
 - **响应状态码**:
+
   - 201: 导入成功
   - 400: 文件格式错误或数据验证失败
   - 403: 权限不足
@@ -244,10 +234,9 @@
   ```
   Authorization: Bearer <access_token>
   ```
-
 - **路径参数**:
-  - `teacher_id`: 教师编号
 
+  - `teacher_id`: 教师编号
 - **响应参数**:
 
   ```json
@@ -256,11 +245,46 @@
     "teacher_id": "string"
   }
   ```
-
 - **响应状态码**:
+
   - 200: 删除成功
   - 403: 权限不足
   - 404: 教师不存在
+
+### 2. 查询教师列表
+
+- **接口路径**: `/api/v1/teacher/teachers`
+- **请求方式**: GET
+- **接口描述**: 查询教师列表，支持多种筛选条件
+- **请求头**:
+
+  ```
+  Authorization: Bearer <access_token>
+  ```
+- **查询参数**:
+
+  ```
+  title: string       // 职称（可选）
+  department: string  // 院系（可选）
+  ```
+- **响应参数**:
+
+  ```json
+  {
+    "total": "integer",        // 总记录数
+    "items": [                 // 教师列表
+      {
+        "id": "integer",       // 用户ID
+        "teacher_id": "string", // 教师编号
+        "name": "string",      // 姓名
+        "title": "string",     // 职称
+        "department": "string", // 院系
+        "phone": "string",     // 联系电话
+        "email": "string"      // 邮箱
+      }
+    ]
+  }
+  ```
 
 ## 学生管理接口
 
@@ -275,7 +299,6 @@
   Authorization: Bearer <access_token>
   Content-Type: multipart/form-data
   ```
-
 - **请求参数**:
 
   ```
@@ -291,20 +314,16 @@
   }
   face_image: 图片文件 (.jpg 或 .png)
   ```
-
 - **响应参数**:
 
   ```json
   {
-    "id": "integer",           // 用户ID
-    "username": "string",      // 用户名（学号）
-    "email": "string",         // 邮箱
-    "name": "string",          // 姓名
-    "created_at": "string"     // 创建时间
+              "message": "Successfully created student account for {name}",
+              "student_id": "学号"
   }
   ```
-
 - **响应状态码**:
+
   - 201: 创建成功
   - 400: 参数错误、学号/邮箱已存在或人脸识别失败
   - 403: 权限不足
@@ -319,7 +338,6 @@
   ```
   Authorization: Bearer <access_token>
   ```
-
 - **查询参数**:
 
   ```
@@ -327,9 +345,7 @@
   department: string    // 院系（可选）
   major: string        // 专业（可选）
   grade: string        // 年级（可选）
-  is_active: boolean   // 账号状态（可选）
   ```
-
 - **响应参数**:
 
   ```json
@@ -338,16 +354,24 @@
     "items": [                 // 学生列表
       {
         "id": "integer",       // 用户ID
-        "username": "string",  // 用户名（学号）
-        "email": "string",     // 邮箱
+        "student_id": "string", // 学号
         "name": "string",      // 姓名
-        "created_at": "string" // 创建时间
+        "department": "string", // 院系
+        "major": "string",     // 专业
+        "grade": "string",     // 年级
+        "class_name": "string", // 班级
+        "email": "string",     // 邮箱
+        "total_attendance_count": "integer", // 总出勤次数
+        "total_late_count": "integer",      // 总迟到次数
+        "total_absence_count": "integer",   // 总缺勤次数
+        "total_leave_count": "integer",     // 总请假次数
+        "created_by": "integer" // 创建者ID
       }
     ]
   }
   ```
-
 - **响应状态码**:
+
   - 200: 查询成功
   - 403: 权限不足
 
@@ -362,16 +386,16 @@
   Authorization: Bearer <access_token>
   Content-Type: multipart/form-data
   ```
-
 - **请求参数**:
 
   ```
   excel_file: Excel文件 (.xlsx 或 .xls)
   face_images: zip文件，包含人脸图片
   ```
-
 - **Excel文件格式要求**:
+
   - 必须包含以下列：
+
     - 学号
     - 姓名
     - 邮箱
@@ -386,29 +410,28 @@
     S2024001,张三,zhangsan@example.com,计算机2401,计算机科学系,计算机科学与技术,2024
     S2024002,李四,lisi@example.com,计算机2401,计算机科学系,计算机科学与技术,2024
     ```
-
 - **人脸图片要求**:
+
   - 图片命名格式：`学号.jpg`
   - 图片要求：
     - 格式：JPG或PNG
     - 大小：不超过2MB
     - 内容：正面免冠照片，光线充足，面部清晰
-
 - **响应参数**:
 
   ```json
   [
-    {
-      "id": "integer",           // 用户ID
-      "username": "string",      // 用户名（学号）
-      "email": "string",         // 邮箱
-      "name": "string",          // 姓名
-      "created_at": "string"     // 创建时间
+   {
+              "message": "Batch import completed",
+              "total": len(df),
+              "success_count": success_count,
+              "failed_count": failed_count,
+              "failed_students": failed_students
     }
   ]
   ```
-
 - **响应状态码**:
+
   - 201: 导入成功
   - 400: 文件格式错误或数据验证失败
   - 403: 权限不足
@@ -423,10 +446,9 @@
   ```
   Authorization: Bearer <access_token>
   ```
-
 - **路径参数**:
-  - `student_id`: 学号
 
+  - `student_id`: 学号
 - **响应参数**:
 
   ```json
@@ -435,8 +457,8 @@
     "student_id": "string"
   }
   ```
-
 - **响应状态码**:
+
   - 200: 删除成功
   - 403: 权限不足
   - 404: 学生不存在
@@ -517,12 +539,13 @@ uploads/
 ### 文件上传要求
 
 1. **Excel文件**:
+
    - 格式：.xlsx 或 .xls
    - 编码：UTF-8
    - 大小：不超过2MB
    - 必须包含指定的列名
-
 2. **人脸图片**:
+
    - 格式：JPG或PNG
    - 大小：不超过2MB
    - 命名规则：学号.jpg
@@ -531,20 +554,21 @@ uploads/
 ### 性能优化建议
 
 1. **前端优化**:
+
    - 使用文件分片上传
    - 添加进度条显示
    - 实现文件队列管理
    - 使用异步操作处理文件
    - 添加文件类型和大小验证
-
 2. **服务器优化**:
+
    - 使用异步IO处理文件
    - 配置合理的超时时间
    - 启用文件压缩
    - 配置缓存策略
    - 定期清理临时文件
-
 3. **安全建议**:
+
    - 使用HTTPS确保传输安全
    - 限制文件大小
    - 验证文件类型
