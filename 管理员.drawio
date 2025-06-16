@@ -1,9 +1,69 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 Edg/137.0.0.0" version="27.1.5">
   <diagram name="第 1 页" id="G3vEMoOcb1yTcfYLXIin">
-    <mxGraphModel>
+    <mxGraphModel dx="1205" dy="681" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="tv4rwv1SzHCdeDqWDArq-1" target="tv4rwv1SzHCdeDqWDArq-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="tv4rwv1SzHCdeDqWDArq-1" target="tv4rwv1SzHCdeDqWDArq-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="tv4rwv1SzHCdeDqWDArq-1" target="tv4rwv1SzHCdeDqWDArq-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="tv4rwv1SzHCdeDqWDArq-1" target="tv4rwv1SzHCdeDqWDArq-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-1" value="管理员管理系统" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="110" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="tv4rwv1SzHCdeDqWDArq-2" target="tv4rwv1SzHCdeDqWDArq-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="tv4rwv1SzHCdeDqWDArq-2" target="tv4rwv1SzHCdeDqWDArq-15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-2" value="功能选择" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="220" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-5" value="退出系统" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="460" y="220" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-7" value="登录" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="140" y="220" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="tv4rwv1SzHCdeDqWDArq-9" target="tv4rwv1SzHCdeDqWDArq-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="tv4rwv1SzHCdeDqWDArq-9" target="tv4rwv1SzHCdeDqWDArq-13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-9" value="人员管理" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="180" y="350" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="tv4rwv1SzHCdeDqWDArq-11" target="tv4rwv1SzHCdeDqWDArq-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-11" value="学生管理" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="80" y="460" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-20" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="tv4rwv1SzHCdeDqWDArq-13" target="tv4rwv1SzHCdeDqWDArq-19">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-13" value="老师管理" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="280" y="460" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-15" value="考勤记录查询" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="414" y="350" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-17" value="增删改查" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="80" y="555" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tv4rwv1SzHCdeDqWDArq-19" value="增删改查" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="280" y="555" width="120" height="60" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
